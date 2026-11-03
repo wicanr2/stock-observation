@@ -1,0 +1,184 @@
+name: 每日監控（BB、NOK、中光電投控）
+
+# 兩個 job：
+#   llm     —— 以固定版本執行上游 ZhuLinsen/daily_stock_analysis（LLM 看多／看空），
+#              只有唯讀權限，且不保留 git 憑證；未設定任何 LLM 金鑰時自動略過。
+#   monitor —— 執行本 repo 的 monitor（13F、三大法人、集保、新聞、統計基準模型），
+#              合併 LLM 結論後產生繁中報告並 commit 回 repo。
+
+on:
+  schedule:
+    # UTC 23:30 週一至週五 = 台北週二至週六 07:30：涵蓋前一晚美股收盤與前一日台股盤後資料。
+    - cron: '30 23 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      run_llm:
+        description: '執行上游 daily_stock_analysis（需在 Secrets 設定 LLM 金鑰）'
+        type: boolean
+        default: true
+
+concurrency:
+  group: daily-monitor
+  cancel-in-progress: false
+
+env:
+  DSA_REPO: ZhuLinsen/daily_stock_analysis
+  DSA_VERSION: v3.33.0
+  # v3.33.0 tag 指向的 commit；固定 commit 避免 tag 被改動後執行到未審視的程式碼。
+  DSA_COMMIT: bba8bf51bdbd3badc75a832c52ede058ef5ab871
+
+jobs:
+  llm:
+    if: github.event_name == 'schedule' || inputs.run_llm
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    env:
+      HAS_LLM: ${{ secrets.GEMINI_API_KEY != '' || secrets.OPENAI_API_KEY != '' || secrets.ANTHROPIC_API_KEY != '' || secrets.DEEPSEEK_API_KEY != '' || secrets.AIHUBMIX_KEY != '' }}
+    steps:
+      - name: 檢查 LLM 金鑰
+        id: check
+        run: |
+          echo "enabled=$HAS_LLM" >> "$GITHUB_OUTPUT"
+          if [ "$HAS_LLM" != "true" ]; then
+            echo "::notice::未設定 LLM 金鑰（GEMINI_API_KEY／OPENAI_API_KEY／ANTHROPIC_API_KEY／DEEPSEEK_API_KEY／AIHUBMIX_KEY），略過上游 LLM 分析。"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.check.outputs.enabled == 'true'
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v6
+        if: steps.check.outputs.enabled == 'true'
+        with:
+          python-version: '3.11'
+
+      - name: 取得上游 daily_stock_analysis（固定版本）
+        if: steps.check.outputs.enabled == 'true'
+        run: |
+          git clone --depth 1 --branch "$DSA_VERSION" "https://github.com/$DSA_REPO.git" .upstream/dsa
+          actual="$(git -C .upstream/dsa rev-parse HEAD)"
+          if [ "$actual" != "$DSA_COMMIT" ]; then
+            echo "::error::$DSA_VERSION 指向 $actual，與固定的 $DSA_COMMIT 不符，停止執行。"
+            exit 1
+          fi
+          pip install --upgrade pip
+          pip install -r .upstream/dsa/requirements.txt
+          pip install PyYAML
+
+      - name: 執行上游 LLM 分析
+        if: steps.check.outputs.enabled == 'true'
+        continue-on-error: true
+        env:
+          # 只傳入上游需要的金鑰；未設定者在下方 unset，避免空字串覆蓋上游預設值。
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          AIHUBMIX_KEY: ${{ secrets.AIHUBMIX_KEY }}
+          TAVILY_API_KEYS: ${{ secrets.TAVILY_API_KEYS }}
+          SERPAPI_API_KEYS: ${{ secrets.SERPAPI_API_KEYS }}
+          BRAVE_API_KEYS: ${{ secrets.BRAVE_API_KEYS }}
+          BOCHA_API_KEYS: ${{ secrets.BOCHA_API_KEYS }}
+          ANSPIRE_API_KEYS: ${{ secrets.ANSPIRE_API_KEYS }}
+          REPORT_LANGUAGE: zh
+          REPORT_TYPE: full
+          MARKET_REVIEW_ENABLED: 'false'
+          TRADING_DAY_CHECK_ENABLED: 'false'
+          SINGLE_STOCK_NOTIFY: 'false'
+          MAX_WORKERS: '1'
+          LOG_LEVEL: INFO
+        run: |
+          for v in GEMINI_API_KEY GEMINI_MODEL OPENAI_API_KEY OPENAI_BASE_URL OPENAI_MODEL ANTHROPIC_API_KEY ANTHROPIC_MODEL \
+                   DEEPSEEK_API_KEY AIHUBMIX_KEY TAVILY_API_KEYS SERPAPI_API_KEYS BRAVE_API_KEYS BOCHA_API_KEYS ANSPIRE_API_KEYS; do
+            if [ -z "${!v}" ]; then unset "$v"; fi
+          done
+          STOCKS="$(python -m monitor dsa-stocks)"
+          export STOCK_LIST="$STOCKS"
+          echo "分析標的：$STOCKS"
+          cd .upstream/dsa
+          mkdir -p data logs reports
+          python main.py --stocks "$STOCKS" --no-market-review --no-notify --force-run
+          latest="$(ls -t reports/report_*.md 2>/dev/null | head -1 || true)"
+          if [ -z "$latest" ]; then
+            echo "::warning::上游未產生報告檔"
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/dsa"
+          cp "$latest" "$RUNNER_TEMP/dsa/dsa_report.md"
+
+      - uses: actions/upload-artifact@v6
+        if: steps.check.outputs.enabled == 'true'
+        with:
+          name: dsa-report
+          path: ${{ runner.temp }}/dsa/dsa_report.md
+          if-no-files-found: ignore
+          retention-days: 14
+
+  monitor:
+    needs: llm
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: monitor/requirements.txt
+
+      - name: 安裝 monitor 依賴
+        run: pip install -r monitor/requirements.txt
+
+      - name: 下載上游 LLM 報告（若有）
+        uses: actions/download-artifact@v7
+        if: needs.llm.result == 'success'
+        continue-on-error: true
+        with:
+          name: dsa-report
+          path: ${{ runner.temp }}/dsa
+
+      - name: 產生每日監控報告
+        env:
+          # SEC 要求宣告可聯絡的 User-Agent，例如「你的名字 you@example.com」；請設在 Actions variables。
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+        run: |
+          ARGS=()
+          if [ -f "$RUNNER_TEMP/dsa/dsa_report.md" ]; then
+            ARGS+=(--dsa-report "$RUNNER_TEMP/dsa/dsa_report.md" --dsa-version "$DSA_VERSION")
+          fi
+          python -m monitor run "${ARGS[@]}" | tee "$RUNNER_TEMP/monitor.log"
+          report="$(grep -o 'monitor/reports/.*\.md' "$RUNNER_TEMP/monitor.log" | tail -1)"
+          if [ -n "$report" ] && [ -f "$report" ]; then
+            cat "$report" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: 提交報告與累積資料
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add monitor/reports monitor/data
+          if git diff --cached --quiet; then
+            echo "沒有新的變更"
+            exit 0
+          fi
+          git commit -m "新增 $(TZ=Asia/Taipei date +%F) 每日監控報告"
+          for i in 1 2 3 4; do
+            if git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"; then
+              exit 0
+            fi
+            sleep $((i * 5))
+          done
+          echo "::error::推送失敗"
+          exit 1

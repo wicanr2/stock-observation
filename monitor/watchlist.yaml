@@ -1,0 +1,83 @@
+# 每日監控觀察清單（monitor 套件使用）
+#
+# - 週報（reports/）的固定標的仍由 AGENTS.md 規範；本檔只管每日監控。
+# - 新增標的時，美股請填 SEC CIK 與 CUSIP（13F 比對用）；台股請填 Yahoo 後綴代碼
+#   （上市 .TW、上櫃 .TWO）與證券代號。
+# - 所有識別碼都應可在一手來源查核；不確定時留空，程式會略過該來源並在報告中註明。
+
+timezone: Asia/Taipei
+
+sec:
+  # 往回掃描幾天內「新申報」且含本 CUSIP 的 13F（申報日，不是交易日）。
+  thirteen_f_lookback_days: 7
+  # 單次最多解析幾份 13F，避免 SEC 限流；超過時報告會標示「已截斷」。
+  thirteen_f_max_filings: 40
+  # 是否回查同一申報人的前一季 13F 以計算期對期變化。
+  thirteen_f_compare_prior: true
+  # 公司本身／持股人申報的公告（8-K、6-K、13G/13D 等）往回掃描天數。
+  filings_lookback_days: 14
+
+news:
+  lookback_days: 7
+  max_items_per_stock: 8
+
+prediction:
+  horizon_days: 5          # 預測「未來 N 個交易日」收盤是否高於今日收盤
+  history_period: 5y       # Yahoo Finance 歷史長度
+  min_train_rows: 250      # walk-forward 最少訓練樣本
+  retrain_every: 21        # 每 N 個交易日重新訓練
+  min_oos_samples: 120     # 樣本外不足此數時不給機率
+
+stocks:
+  - id: BB
+    name: BlackBerry
+    name_zh: 黑莓
+    market: US
+    exchange: NYSE
+    yahoo: BB
+    dsa_code: BB
+    sec_cik: "0001070235"
+    cusip: "09228F103"
+    security_note: 普通股（COM），不是 ADR
+    benchmark: SPY
+    news_queries:
+      - {q: "BlackBerry stock", hl: en-US, gl: US, ceid: "US:en"}
+      - {q: "黑莓 BlackBerry", hl: zh-TW, gl: TW, ceid: "TW:zh-Hant"}
+
+  - id: NOK
+    name: Nokia
+    name_zh: 諾基亞
+    market: US
+    exchange: NYSE
+    yahoo: NOK
+    dsa_code: NOK
+    sec_cik: "0000924613"
+    cusip: "654902204"
+    security_note: Sponsored ADR；不得與芬蘭本地普通股直接相加
+    benchmark: SPY
+    news_queries:
+      - {q: "Nokia stock", hl: en-US, gl: US, ceid: "US:en"}
+      - {q: "諾基亞 Nokia", hl: zh-TW, gl: TW, ceid: "TW:zh-Hant"}
+
+  - id: "3718"
+    name: 中光電投控
+    name_en: Coretronic Investment Holding (CiHC)
+    market: TW
+    exchange: TPEx
+    yahoo: 3718.TWO
+    dsa_code: 3718.TWO
+    tw_code: "3718"
+    listed_since: "2026-09-03"
+    security_note: 上櫃普通股；2026-09-03 由中光電（5371）1:1 股份轉換而來
+    # 股份轉換前的價格歷史（1:1，總股數不變）。僅用於統計模型拉長樣本，
+    # 報告會標示拼接日；若 Yahoo 已下架舊代碼，模型會改報樣本不足。
+    predecessor:
+      yahoo: 5371.TWO
+      tw_code: "5371"
+      until: "2026-09-02"
+      ratio: 1.0
+      note: 中光電（5371）於 2026-09-03 終止上櫃，股份 1:1 轉換為中光電投控（3718）
+    benchmark: ^TWOII
+    news_queries:
+      - {q: "中光電投控", hl: zh-TW, gl: TW, ceid: "TW:zh-Hant"}
+      - {q: "中光電 3718", hl: zh-TW, gl: TW, ceid: "TW:zh-Hant"}

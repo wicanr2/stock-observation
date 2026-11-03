@@ -1,0 +1,35 @@
+name: monitor 測試
+
+on:
+  push:
+    paths:
+      - 'monitor/**'
+      - 'tests/**'
+      - 'requirements-dev.txt'
+      - '.github/workflows/monitor-tests.yml'
+  pull_request:
+    paths:
+      - 'monitor/**'
+      - 'tests/**'
+      - 'requirements-dev.txt'
+      - '.github/workflows/monitor-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      # 測試全部使用 tests/fixtures 的合成資料，不連網。
+      - run: python -m pytest -q
