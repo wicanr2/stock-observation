@@ -17,7 +17,8 @@
 
 - 上游引擎沿用開源專案 [ZhuLinsen/daily_stock_analysis](https://github.com/ZhuLinsen/daily_stock_analysis)（MIT，固定 v3.33.0）的 LLM 看多／看空分析；選型理由見 [`docs/project-selection.md`](docs/project-selection.md)。
 - 本 repo 補上 SEC 13F／13G 機構持股、台股三大法人與集保股權分散、可檢驗的統計基準模型與命中率追蹤，並輸出繁體中文報告到 `monitor/reports/YYYY/YYYY-MM-DD.md`（[索引](monitor/reports/README.md)）。
-- 設定方式（GitHub Secrets／Variables）見 [`monitor/README.md`](monitor/README.md)。
+- **Web 儀表板**：<https://wicanr2.github.io/stock-observation/>（GitHub Pages；交易時段每 30 分鐘刷新盤中報價與新聞）。
+- 設定方式（GitHub Secrets／Variables、Pages 啟用）見 [`monitor/README.md`](monitor/README.md)。
 
 ## 週報更新頻率
 

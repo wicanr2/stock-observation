@@ -33,3 +33,5 @@ jobs:
       - run: pip install -r requirements-dev.txt
       # 測試全部使用 tests/fixtures 的合成資料，不連網。
       - run: python -m pytest -q
+      - name: 前端語法檢查
+        run: node --check monitor/web/app.js

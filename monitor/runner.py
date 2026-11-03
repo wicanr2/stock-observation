@@ -240,6 +240,10 @@ def run(ctx: RunContext) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     report.update_index(ctx.out_dir, ctx.today, settings)
+
+    from . import export
+
+    export.write_json(ctx.data_dir / "dashboard.json", export.build_dashboard(ctx, bundles, path))
     return path
 
 

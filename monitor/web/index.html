@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>股票監控儀表板</title>
+  <meta name="description" content="BB、NOK、中光電投控的機構持股、新聞與漲跌預測持續監控；資料來自 SEC EDGAR、櫃買中心、集保結算所等公開來源。">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M7 21l6-6 4 4 8-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#detail">跳到個股內容</a>
+  <header class="topbar">
+    <div class="brand">
+      <h1>股票監控</h1>
+      <p class="subtitle">機構持股 · 新聞 · 漲跌預測</p>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite">載入中…</div>
+    <div class="actions">
+      <button type="button" id="refresh" class="btn">重新整理</button>
+      <button type="button" id="theme" class="btn" aria-label="切換深色／淺色">深色</button>
+    </div>
+  </header>
+
+  <main id="app" class="app">
+    <section id="overview" class="overview" aria-label="總覽"></section>
+    <nav id="tabs" class="tabs" aria-label="選擇股票"></nav>
+    <section id="detail" class="detail" tabindex="-1"></section>
+    <section id="sources" class="card sources" aria-label="資料來源狀態"></section>
+  </main>
+
+  <footer class="footer">
+    <div id="reports"></div>
+    <p class="disclaimer">本頁整理公開資料與模型輸出，<strong>不構成投資建議</strong>。13F 是季末持股的延遲揭露，不是即時資金流；LLM 內容未經核實；資料缺漏時顯示「本次未取得」，不以估算補齊。</p>
+  </footer>
+
+  <noscript><p class="card">此儀表板需要啟用 JavaScript。也可直接閱讀 <a href="https://github.com/wicanr2/stock-observation/tree/main/monitor/reports">Markdown 報告</a>。</p></noscript>
+  <script src="app.js" defer></script>
+</body>
+</html>
