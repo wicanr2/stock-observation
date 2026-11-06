@@ -1,0 +1,8 @@
+# monitor 套件依賴（與上游 daily_stock_analysis 的依賴分開安裝）
+pandas>=2.2,<4
+numpy>=1.26,<3
+scikit-learn>=1.4,<2
+yfinance>=0.2.54,<2
+requests>=2.31,<3
+PyYAML>=6,<7
+opencc-python-reimplemented==0.1.7

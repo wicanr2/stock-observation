@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<informationTable xmlns="http://www.sec.gov/edgar/document/thirteenf/informationtable" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <infoTable>
+    <nameOfIssuer>SAMPLE ISSUER</nameOfIssuer>
+    <titleOfClass>COM</titleOfClass>
+    <cusip>09228F103</cusip>
+    <value>1000000</value>
+    <shrsOrPrnAmt><sshPrnamt>100000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+    <investmentDiscretion>SOLE</investmentDiscretion>
+    <votingAuthority><Sole>100000</Sole><Shared>0</Shared><None>0</None></votingAuthority>
+  </infoTable>
+  <infoTable>
+    <nameOfIssuer>SAMPLE ISSUER</nameOfIssuer>
+    <titleOfClass>COM</titleOfClass>
+    <cusip>09228f103</cusip>
+    <value>500000</value>
+    <shrsOrPrnAmt><sshPrnamt>50,000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+    <investmentDiscretion>DFND</investmentDiscretion>
+    <votingAuthority><Sole>0</Sole><Shared>50000</Shared><None>0</None></votingAuthority>
+  </infoTable>
+  <infoTable>
+    <nameOfIssuer>SAMPLE ISSUER</nameOfIssuer>
+    <titleOfClass>PUT</titleOfClass>
+    <cusip>09228F103</cusip>
+    <value>200000</value>
+    <shrsOrPrnAmt><sshPrnamt>20000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+    <putCall>Put</putCall>
+    <investmentDiscretion>SOLE</investmentDiscretion>
+    <votingAuthority><Sole>0</Sole><Shared>0</Shared><None>0</None></votingAuthority>
+  </infoTable>
+  <infoTable>
+    <nameOfIssuer>SAMPLE ISSUER</nameOfIssuer>
+    <titleOfClass>CALL</titleOfClass>
+    <cusip>09228F103</cusip>
+    <value>300000</value>
+    <shrsOrPrnAmt><sshPrnamt>30000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+    <putCall>CALL</putCall>
+    <investmentDiscretion>SOLE</investmentDiscretion>
+    <votingAuthority><Sole>0</Sole><Shared>0</Shared><None>0</None></votingAuthority>
+  </infoTable>
+  <infoTable>
+    <nameOfIssuer>SAMPLE ISSUER</nameOfIssuer>
+    <titleOfClass>NOTE</titleOfClass>
+    <cusip>09228F103</cusip>
+    <value>10000</value>
+    <shrsOrPrnAmt><sshPrnamt>10000</sshPrnamt><sshPrnamtType>PRN</sshPrnamtType></shrsOrPrnAmt>
+    <investmentDiscretion>SOLE</investmentDiscretion>
+    <votingAuthority><Sole>0</Sole><Shared>0</Shared><None>0</None></votingAuthority>
+  </infoTable>
+  <infoTable>
+    <nameOfIssuer>OTHER SAMPLE CO</nameOfIssuer>
+    <titleOfClass>COM</titleOfClass>
+    <cusip>000000000</cusip>
+    <value>999</value>
+    <shrsOrPrnAmt><sshPrnamt>999</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+    <investmentDiscretion>SOLE</investmentDiscretion>
+    <votingAuthority><Sole>999</Sole><Shared>0</Shared><None>0</None></votingAuthority>
+  </infoTable>
+</informationTable>

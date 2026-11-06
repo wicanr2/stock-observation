@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+<channel>
+<title>"中光電投控" - Google 新聞</title>
+<item>
+<title>SAMPLE 測試新聞標題一 - 測試新聞網</title>
+<link>https://news.google.com/rss/articles/SAMPLE1</link>
+<pubDate>Mon, 02 Nov 2026 03:00:00 GMT</pubDate>
+<source url="https://example.com">測試新聞網</source>
+</item>
+<item>
+<title>SAMPLE 測試新聞標題一 - 測試新聞網</title>
+<link>https://news.google.com/rss/articles/SAMPLE1-dup</link>
+<pubDate>Mon, 02 Nov 2026 04:00:00 GMT</pubDate>
+<source url="https://example.com">測試新聞網</source>
+</item>
+<item>
+<title>SAMPLE 很舊的測試新聞 - 舊聞報</title>
+<link>https://news.google.com/rss/articles/SAMPLE-OLD</link>
+<pubDate>Mon, 05 Oct 2026 03:00:00 GMT</pubDate>
+<source url="https://example.org">舊聞報</source>
+</item>
+</channel>
+</rss>
